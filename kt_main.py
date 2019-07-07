@@ -181,8 +181,8 @@ class Gui():
                 if d >0:
                     cv2.putText(frame, "%.1fcm" % d,( endX-15,y), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (255, 0, 255), 2)
 
+                self.fps.update()
                 
-        
         return frame
                
     """def tst(self,frame):
@@ -243,8 +243,8 @@ class Gui():
         self.override_flag=False
         if self.vid.isOpened():
             cv2.destroyAllWindows()
-            if self.vid.isOpened():
-                self.vid.release()
+            #if self.vid.isOpened():
+            #    self.vid.release()
             self.fps.stop()
             print("[INFO] elapsed time: {:.2f}".format(self.fps.elapsed()))
             print("[INFO] approx. FPS: {:.2f}".format(self.fps.fps()))
@@ -314,17 +314,29 @@ class control_system:
         self.ser_connect.close()
 
 
+#main process loop
 class main_ctrl(Gui,control_system):
 
     def __init__(self):
         ctrl=control_system()
         ctrl.speak_me(" welcome to the kribo Tech industries")
         ctrl.speak_me(" system starting to booted up")
+        print("Enter 'q' to stop the process")
         print("Press 's'  key on the keybaord to start the proess")
+
         inp=input('')
-        if inp=='s':
-            ctrl.speak_me(" system enggaged and main process is going to start")
-            Gui(tkinter.Tk(), "kt_window")
+        
+        while inp:
+            
+            if inp=='s':
+                ctrl.speak_me(" system enggaged and main process is going to start")
+                Gui(tkinter.Tk(), "kt_window")
+            elif inp=='q':
+                break
+            else:
+                print("Press 's'  key on the keybaord to start the proess")
+                inp=input("")
+                print("Enter the right input to start the process")
 
 
 
