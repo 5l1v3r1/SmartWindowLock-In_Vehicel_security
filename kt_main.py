@@ -1,4 +1,5 @@
 import cv2
+import math
 import serial
 import numpy as np
 import time
@@ -21,13 +22,19 @@ class Gui():
         self.confidence=0.2
         self.fps = FPS().start()
         self.override_flag=False
+        # d para,m
+        self.alpha = 8.0 * math.pi / 180
+        self.v0 = 119.865631204
+        self.ay = 332.262498472
+        self.max_ht=15.5 - 10 #cm    
         self.CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
 	"bottle", "bus", "car", "cat", "chair", "cow", "diningtable",
 	"dog", "horse", "motorbike", "person", "pottedplant", "sheep",
 	"sofa", "train", "tvmonitor"]
         self.ELEM_CLASSES = ["background","bicycle", "bird", "bus", "car", "cat", "cow",
 	"dog", "horse", "motorbike", "person", "sheep"]
-        
+        self.flip_frame=False
+        self.flip_state=1    # 0 - vertical flip ; 1- horizontal flip ; -1 both vertical and horizontal flip
         self.COLORS = np.random.uniform(0, 255, size=(len(self.CLASSES), 3))
 
 
@@ -52,7 +59,7 @@ class Gui():
         #print("width",self.width)
         #print("height",self.height)
 
-
+        self.flip_frame=True # change to false if you not want to flip frame
         self.b1_x1=int(round(self.width/2))-125
         self.b1_y1=0
         self.b1_x2=int(round(self.width/2))-125
@@ -78,11 +85,20 @@ class Gui():
         self.update()
         self.fps.update()
         self.window.mainloop()
+        
+    def d_calculate(self, v, h):
+        # compute and return the distance from the target point to the camera
+        d = h*5 / math.tan(self.alpha + math.atan((v - self.v0) / self.ay))
+        return d    
 
     def get_frame(self):
         if self.vid.isOpened():
             self.ret, frame = self.vid.read()
             if self.ret:
+                if self.flip_frame==True:
+                    frame=cv2.flip(frame,self.flip_state)
+                else:
+                    frame=frame
                 frame=cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
                 cv2.putText(frame,"Kribo Tech",(10,30),cv2.FONT_HERSHEY_SIMPLEX,0.5,(255,0,0),2)
                 cv2.putText(frame,time.strftime("%d-%m-%Y-%H-%M-%S"),(10,50),cv2.FONT_HERSHEY_SIMPLEX,0.5,(255,0,0),2)
@@ -132,31 +148,39 @@ class Gui():
                 #cv2.putText(frame,self.fps,(10,10),cv2.FONT_HERSHEY_SIMPLEX,0.5,self.COLORS[idx],2)
                 box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
                 (startX, startY, endX, endY) = box.astype("int")
+                v=startY+endY-5
+
+                d=self.d_calculate(v,self.max_ht)
+                
+                #print("Dist :", d)
 
                 if self.CLASSES[idx] not in self.ELEM_CLASSES:
                     continue
-                """ uncomment all the self.respond classes for the voice id """
-                if (startX < self.b1_x1 and  endX <self.b1_x2) :
-                    print("left")
-                    self.control_system.left_plane()
-                    #self.respond("left",self.CLASSES[idx])
-                if (startX > self.b1_x1 and  endX > self.b1_x2) and (startX < self.b2_x1 and  endX < self.b2_x2):
-                    print("center")
-                    self.control_system.center_plane()
-                    #self.respond("center",self.CLASSES[idx])    
-                if (startX > self.b2_x1 and  endX > self.b2_x2) :
-                    print("right")
-                    self.control_system.right_plane()
-                    #self.respond("right",self.CLASSES[idx])
+                if d > 10:    
+                    """ uncomment all the self.respond classes for the voice id """
+                    if (startX < self.b1_x1 and  endX <self.b1_x2) :
+                        #print("left")
+                        self.control_system.left_plane()
+                        #self.respond("left",self.CLASSES[idx])
+                    if (startX > self.b1_x1 and  endX > self.b1_x2) and (startX < self.b2_x1 and  endX < self.b2_x2):
+                        #print("center")
+                        self.control_system.center_plane()
+                        #self.respond("center",self.CLASSES[idx])    
+                    if (startX > self.b2_x1 and  endX > self.b2_x2) :
+                        #print("right")
+                        self.control_system.right_plane()
+                        #self.respond("right",self.CLASSES[idx])
                     
-                
-                
                 #if self.CLASSES[idx] == "person":
                 #    continue
                 label = "{}: {:.2f}%".format(self.CLASSES[idx],confidence * 100)
                 cv2.rectangle(frame, (startX, startY), (endX, endY),self.COLORS[idx], 2)
                 y = startY - 15 if startY - 15 > 15 else startY + 15
-                cv2.putText(frame, label, (startX, y),cv2.FONT_HERSHEY_SIMPLEX, 0.5, self.COLORS[idx], 2)
+                cv2.putText(frame, label, (startX, y),cv2.FONT_HERSHEY_SIMPLEX, 0.3, self.COLORS[idx], 2)
+                if d >0:
+                    cv2.putText(frame, "%.1fcm" % d,( endX-15,y), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (255, 0, 255), 2)
+
+                
         
         return frame
                
