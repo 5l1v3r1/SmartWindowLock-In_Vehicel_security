@@ -161,15 +161,15 @@ class Gui():
                     if (startX < self.b1_x1 and  endX <self.b1_x2) :
                         #print("left")
                         self.control_system.left_plane()
-                        #self.respond("left",self.CLASSES[idx])
+                        self.respond("left",self.CLASSES[idx])
                     if (startX > self.b1_x1 and  endX > self.b1_x2) and (startX < self.b2_x1 and  endX < self.b2_x2):
                         #print("center")
                         self.control_system.center_plane()
-                        #self.respond("center",self.CLASSES[idx])    
+                        self.respond("center",self.CLASSES[idx])    
                     if (startX > self.b2_x1 and  endX > self.b2_x2) :
                         #print("right")
                         self.control_system.right_plane()
-                        #self.respond("right",self.CLASSES[idx])
+                        self.respond("right",self.CLASSES[idx])
                     
                 #if self.CLASSES[idx] == "person":
                 #    continue
@@ -285,15 +285,15 @@ class control_system:
         """ uncomment all the self.speak_me classes for the voice id """
         
         self.ser_connect.write("a".encode('utf-8'))
-        #self.speak_me(self.message1)
+        self.speak_me(self.message1)
 
     def right_plane(self):
         self.ser_connect.write("r".encode('utf-8'))
-        #self.speak_me(self.message3)
+        self.speak_me(self.message3)
 
     def left_plane(self):
         self.ser_connect.write("l".encode('utf-8'))
-        #self.speak_me(self.message2)
+        self.speak_me(self.message2)
 
     def speak_me(self,inp):
         # replay to the word you want
@@ -313,7 +313,8 @@ class control_system:
 class main_ctrl(Gui,control_system):
 
     def __init__(self):
-
+        #ctrl=control_system(115200)
+        #ctrl.speak_me("Person in fornt off drive careful ")
         print("Press 's'  key on the keybaord to start the proess")
         inp=input('')
         if inp=='s':
