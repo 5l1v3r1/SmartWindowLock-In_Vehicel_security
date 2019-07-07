@@ -4,7 +4,7 @@ import serial
 import numpy as np
 import time
 from time import sleep
-import pyttsx as p
+import pyttsx3 as p
 from tkinter import *
 import tkinter
 import PIL.Image, PIL.ImageTk
