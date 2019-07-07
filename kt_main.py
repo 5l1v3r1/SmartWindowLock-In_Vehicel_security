@@ -15,7 +15,8 @@ class Gui():
 
     def __init__(self,window,window_title,video_source=1):
 
-        self.control_system=control_system(115200)
+        self.control_system=control_system()
+        self.ctrl_system=self.control_system.ser_system(115200)
         self.window = window
         self.window.title(window_title)
         self.video_source = video_source
@@ -254,11 +255,14 @@ class Gui():
 
 class control_system:
 
-    def __init__(self,com_port):
-        print("Initialising all Hardware accesories")
+    def __init__(self):
+        print("Initiallising all systems")
         self.message1="Object approaching near the vehicle"
         self.message2="Object approaching to the left of the vehicle"
         self.message3="Object approaching to the right of the vehicle"
+
+    def ser_system(self,com_port):
+        print("Initialising all Hardware accesories")
         self.com_port=com_port
         self.ports=list(ports.comports())
         self.addr_list=[]
@@ -313,11 +317,13 @@ class control_system:
 class main_ctrl(Gui,control_system):
 
     def __init__(self):
-        #ctrl=control_system(115200)
-        #ctrl.speak_me("Person in fornt off drive careful ")
+        ctrl=control_system()
+        ctrl.speak_me(" welcome to the kribo Tech industries")
+        ctrl.speak_me(" system starting to booted up")
         print("Press 's'  key on the keybaord to start the proess")
         inp=input('')
         if inp=='s':
+            ctrl.speak_me(" system enggaged and main process is going to start")
             Gui(tkinter.Tk(), "kt_window")
 
 
